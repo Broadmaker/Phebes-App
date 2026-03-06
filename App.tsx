@@ -12,12 +12,13 @@ import Toast from 'react-native-toast-message';
 import { migrateIfNeeded } from '@/db/migrate';
 import { ProductsProvider } from '@/db/ProductsContext';
 import { SalesProvider } from '@/db/SalesContext';
+import { db } from '@/db/client';
 
 export default function App() {
   useEffect(() => {
     (async () => {
       try {
-        await migrateIfNeeded();
+        await migrateIfNeeded(db);
         console.log('✅ Database ready');
       } catch (err) {
         console.error('❌ Database migration failed', err);

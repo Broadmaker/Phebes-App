@@ -10,6 +10,7 @@ export default function LoginScreen({ navigation }: any) {
 
   const STATIC_PIN = '233444';
 
+  // Shake animation for wrong PIN
   const triggerShake = () => {
     Animated.sequence([
       Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
@@ -19,6 +20,7 @@ export default function LoginScreen({ navigation }: any) {
     ]).start();
   };
 
+  // Handle hidden TextInput changes
   const handleChange = (text: string) => {
     const cleaned = text.replace(/[^0-9]/g, '');
     if (cleaned.length <= 6) {
@@ -31,6 +33,7 @@ export default function LoginScreen({ navigation }: any) {
     }
   };
 
+  // Check PIN
   const handleSubmit = (enteredPin: string) => {
     if (enteredPin === STATIC_PIN) {
       navigation.replace('MainTabs');
@@ -39,30 +42,29 @@ export default function LoginScreen({ navigation }: any) {
       triggerShake();
       setPin('');
       setTimeout(() => setError(false), 800);
+      setTimeout(() => inputRef.current?.focus(), 300); // refocus after wrong PIN
     }
   };
 
   return (
     <TouchableOpacity
       activeOpacity={1}
-      onPress={() => inputRef.current?.focus()}
+      onPress={() => {
+        // Force keyboard to appear reliably
+        inputRef.current?.blur();
+        setTimeout(() => inputRef.current?.focus(), 50);
+      }}
       className="flex-1 items-center justify-center bg-white px-6">
-      {/* 🔷 LOGO SECTION */}
-      {/* Replace the require() path below with your asset */}
+      {/* 🔷 Logo Section */}
       <Image
         source={require('../../../assets/phebes.png')}
         style={{ width: 120, height: 120, resizeMode: 'contain' }}
       />
-      {/* 🔼 CHANGE THIS FILE:
-          Put your logo inside /assets
-          Then change:
-          require("../../assets/logo.png")
-      */}
 
       <Text className="mb-2 mt-10 text-2xl font-bold">Enter PIN</Text>
       <Text className="mb-8 text-gray-500">Enter your 6-digit access code</Text>
 
-      {/* Hidden Input */}
+      {/* Hidden TextInput */}
       <TextInput
         ref={inputRef}
         value={pin}
@@ -80,13 +82,18 @@ export default function LoginScreen({ navigation }: any) {
         {[...Array(6)].map((_, index) => {
           const filled = index < pin.length;
           return (
-            <View
+            <TouchableOpacity
               key={index}
+              onPress={() => {
+                inputRef.current?.blur();
+                setTimeout(() => inputRef.current?.focus(), 50);
+              }}
+              activeOpacity={1}
               className={`h-14 w-12 items-center justify-center rounded-xl border-2 ${
                 error ? 'border-red-500' : filled ? 'border-blue-600' : 'border-gray-300'
               }`}>
               <Text className="text-xl font-bold">{filled ? '•' : ''}</Text>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </Animated.View>

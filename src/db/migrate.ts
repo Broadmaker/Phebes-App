@@ -1,24 +1,16 @@
-import { db } from './client';
-
 /**
  * migrate(reset = false)
- * ---------------------
- * Creates / updates all POS tables.
- *
- * @param reset - if true, drops existing tables and recreates them (dev/testing only)
  */
-export async function migrate(reset = false) {
+export async function migrate(db: any, reset = false) {
   try {
     if (reset) {
       console.log('Dropping existing tables (dev reset)...');
 
-      // Drop child tables first
       await db.run(`DROP TABLE IF EXISTS sale_items;`);
       await db.run(`DROP TABLE IF EXISTS sales;`);
       await db.run(`DROP TABLE IF EXISTS products;`);
     }
 
-    // Products table
     await db.run(`
       CREATE TABLE IF NOT EXISTS products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,7 +22,6 @@ export async function migrate(reset = false) {
       );
     `);
 
-    // Sales table
     await db.run(`
       CREATE TABLE IF NOT EXISTS sales (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +33,6 @@ export async function migrate(reset = false) {
       );
     `);
 
-    // Sale items table
     await db.run(`
       CREATE TABLE IF NOT EXISTS sale_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,27 +55,22 @@ export async function migrate(reset = false) {
 
 /**
  * migrateIfNeeded()
- * -----------------
- * Auto-migration helper:
- * - In development (__DEV__ = true): resets tables for testing
- * - In production (__DEV__ = false): ensures tables exist without dropping data
  */
-export async function migrateIfNeeded() {
+export async function migrateIfNeeded(db: any) {
   try {
     if (__DEV__) {
       console.log('Development environment detected. Resetting tables...');
-      await migrate(true); // full reset in dev
+      await migrate(db, true);
       return;
     }
 
-    // Production: check if tables exist
     const productsTable = await db.get(
       `SELECT name FROM sqlite_master WHERE type='table' AND name='products';`
     );
 
     if (!productsTable) {
       console.log('POS tables missing. Running safe migration for production...');
-      await migrate(false); // create tables without dropping data
+      await migrate(db, false);
     } else {
       console.log('POS tables exist. No migration needed ✅');
     }

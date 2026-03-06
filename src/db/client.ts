@@ -22,7 +22,7 @@ export async function initializeDB(reset = false) {
   try {
     if (__DEV__) {
       console.log('Running database migrations...');
-      await migrate(reset);
+     await migrate(db, reset);
     } else {
       // Production: never reset
       await migrate(false);
@@ -33,7 +33,7 @@ export async function initializeDB(reset = false) {
   }
 }
 
-// Optional: auto-run on app startup (recommended for Expo)
+/* // Optional: auto-run on app startup (recommended for Expo)
 initializeDB(false).catch((err) =>
   console.error('DB init error:', err)
-);
+); */
